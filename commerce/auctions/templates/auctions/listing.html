@@ -1,0 +1,91 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>{{listing.title}}</h2>
+    {% if user.is_authenticated %}
+        {% if listing.status %}
+            {% if user == listing.creator %}
+                <form action="{% url 'close' listing.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Close listing</button>
+                </form>
+            {% else %}
+                {% if user in subscribers %}
+                <form action="{% url 'unsubscribe' listing.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Remote of watchlist</button>
+                </form>
+                {% else %}
+                    <form action="{% url 'subscribe' listing.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-success btn-sm">Add in watchlist</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        {% else %}
+            <div class="alert alert-danger" role="alert">
+                Listing close
+            </div>
+                {% if bids.last.user == user %}
+                    <div class="alert alert-success" role="alert">
+                        Congratulation! You win this listing!
+                    </div>
+                {% endif %}
+        {% endif %}
+    {% endif %}
+    <img src="{{ listing.image }}" id="listing_img">
+    <div id="full_description">{{listing.description}}</div>
+    {% if bids.last is not None %}
+        <div id="Bid"><h3>${{ bids.last }}</h3></div>
+    {% else %}
+        <div id="Bid"><h3>${{ listing.starting_bid }}</h3></div>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <form action="{% url 'bid' listing.id %}" method="POST" id="BidForm">
+            {% csrf_token %}
+            <div class="form-group">
+                {% if bids.last is None %}
+                    <small id="emailHelp" class="form-text text-muted">There are no bids yet. Be first.</small>
+                {% elif bids.last.user == user %}
+                    <small id="emailHelp" class="form-text text-muted">{{bids.count}} bid(s) so far. Your bid is the current bid.</small>
+                {% else %}
+                    <small id="emailHelp" class="form-text text-muted">{{bids.count}} bid(s) so far.</small>
+                {% endif %}
+            <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="bid" placeholder="Bid">
+            </div>
+            <button type="submit" class="btn btn-primary">Place bid</button>
+        </form>
+    {% endif %}
+    <h3>Details</h3>
+    <ul>
+        <li>Listed by {{ listing.creator.username }}</li>
+        {% if listing.category == "" %}
+            <li>Category: No category listed</li>
+        {% else %}
+            <li>Category: {{ listing.category }}</li>  
+        {% endif %}
+        <li>Posting date: {{ listing.date}}</li>
+    </ul>
+    <h3>Comments</h3>
+    {% if user.is_authenticated %}
+            <form style="width: 50%;" action="{% url 'listing' listing.id %}" method="POST">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    <input type="text" name="text" class="form-control" placeholder="Leave your comment">
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Submit</button>
+                    </div>
+                  </div>
+            </form>
+    {% endif %}
+    {% if comments %} 
+    <div id="chat">
+    {% endif %}
+        {% for comment in comments %}
+        <p style="margin-bottom: 0px;">{{ comment.user }} <span class="date">{{ comment.date }}</span></p>
+            <div class="comment">
+                <p style="margin-bottom: 0px;">{{ comment.text }}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

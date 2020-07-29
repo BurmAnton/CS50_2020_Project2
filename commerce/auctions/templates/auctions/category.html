@@ -1,0 +1,40 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<h2>Active Listings</h2>
+    {% for listing in listings %}
+        <a class="listing_a" href="{% url 'listing' listing.id %}">
+            <div class="listing_preview">
+                <div class="listing_img">
+                    <img src="{{ listing.image }}">
+                </div>
+                <div class="container">
+                    <div class="row justify-content-start">
+                        <div class="col-6">
+                            <h3>{{ listing.title }}</h3>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-12">
+                            <div class="description">
+                                <p>{{ listing.description }}</p>
+                            </div>
+                            <div class="price">
+                                {% if listing.bids.last is not None %}
+                                    ${{ listing.bids.last }}
+                            {% else %}
+                                    ${{ listing.starting_bid }}
+                            {% endif %}
+                            </div>  
+                        </div>
+                    </div>
+                    <div class="row justify-content-end">
+                        <div class="col-12">
+                            <div class="date">Created {{ listing.date }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    {% endfor %}
+{% endblock %}
